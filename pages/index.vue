@@ -61,15 +61,15 @@ export default Vue.extend({
   name: "IndexPage",
   data() {
     return {
-      timer: (null as any) as NodeJS.Timer,
-      recordingTimeout: (null as any) as NodeJS.Timeout,
+      timer: null as any as NodeJS.Timer,
+      recordingTimeout: null as any as NodeJS.Timeout,
       recordingDuration: 0,
       totalDuration: 30,
       textarea: "",
-      recorder: null as unknown as MediaRecorder,
+      recorder: null as any as MediaRecorder,
       isRecording: false,
-      audioPath: null as unknown as string,
-      recordingBlob: null as unknown,
+      audioPath: null as any as string,
+      recordingBlob: null as any,
       constraints: {
         video: false,
         audio: {
@@ -80,7 +80,7 @@ export default Vue.extend({
     };
   },
   methods: {
-    clickButton() {
+    async clickButton() {
       if (this.recorder != null && this.recorder.state == "recording") {
         this.stopRecording();
       } else {
@@ -104,10 +104,7 @@ export default Vue.extend({
       this.isRecording = true;
       this.recorder = new MediaRecorder(stream);
       this.recorder.start();
-      this.timer = setInterval(() => {
-        console.log(this.recordingDuration);
-        this.recordingDuration++;
-      }, 1000);
+      this.timer = setInterval(() => this.recordingDuration++, 1000);
       this.recorder.ondataavailable = (event: BlobEvent) => {
         // stop all audio tracks
         for (let audioTrack of stream.getAudioTracks()) {
@@ -115,6 +112,12 @@ export default Vue.extend({
         }
         this.audioPath = window.URL.createObjectURL(event.data);
         this.recordingBlob = event.data;
+
+        // Get phoneme
+        this.$huggingFaceApi
+          .post("/", this.recordingBlob)
+          .then(console.log)
+          .catch(console.log);
 
         // some loggings
         console.log(event);
