@@ -15,6 +15,7 @@
           v-model="textarea"
         >
         </el-input>
+        <div>Phoneme Recording: {{recordingPhoneme}}</div>
       </div>
 
       <div style="height: 50px"></div>
@@ -48,6 +49,7 @@
           <span>Download</span>
         </el-button>
       </div>
+
     </div>
   </div>
 </template>
@@ -70,6 +72,8 @@ export default Vue.extend({
       isRecording: false,
       audioPath: null as any as string,
       recordingBlob: null as any,
+      recordingPhoneme: '',
+      processingSpeech: false,
       constraints: {
         video: false,
         audio: {
@@ -113,10 +117,8 @@ export default Vue.extend({
         this.audioPath = window.URL.createObjectURL(event.data);
         this.recordingBlob = event.data;
 
-        // Get phoneme
-        this.$axios.post('/api-phoneme', this.recordingBlob)
-        .then(console.log)
-        .catch(console.log);
+        this.processingSpeech = true;
+        this.getPhoneme();
       };
 
       // Set recording in 30 seconds
@@ -133,6 +135,27 @@ export default Vue.extend({
       link.click();
       document.body.removeChild(link);
     },
+    getPhoneme(currentAttempt: number = 0) {
+      // reach max retry
+      if (currentAttempt == 3) {
+        this.processingSpeech = false;
+        return;
+      }
+
+      this.$axios.post('/api-phoneme', this.recordingBlob)
+        .then(response => {
+          this.recordingPhoneme = response.data['text']
+        })
+        .catch(error => {
+          console.log(error)
+          // Model is being prepared
+          if (error.response.status == 503) {
+            setTimeout(() => this.getPhoneme(currentAttempt++), 1000*60)
+          } else {
+            this.processingSpeech = false;
+          }
+        });
+    }
   },
 });
 </script>
