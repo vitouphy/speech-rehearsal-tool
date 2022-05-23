@@ -4,7 +4,7 @@
       <el-menu-item index="1" style="float: none">Prepper</el-menu-item>
     </el-menu>
 
-    <div style="width: 80%; left: 10%">
+    <div style="width: 80%; left: 10%" v-loading="processingSpeech">
       <div style="height: 50px"></div>
 
       <div>
@@ -145,11 +145,12 @@ export default Vue.extend({
       this.$axios.post('/api-phoneme', this.recordingBlob)
         .then(response => {
           this.recordingPhoneme = response.data['text']
+          this.processingSpeech = false;
         })
         .catch(error => {
           console.log(error)
-          // Model is being prepared
           if (error.response.status == 503) {
+            // Model is being prepared
             setTimeout(() => this.getPhoneme(currentAttempt++), 1000*60)
           } else {
             this.processingSpeech = false;
