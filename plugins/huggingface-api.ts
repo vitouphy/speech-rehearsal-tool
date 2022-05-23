@@ -22,15 +22,11 @@ declare module '@nuxt/types' {
 }
 
 export const huggingFacePlugin: Plugin = (context, inject): void => {
-    const api = context.$axios.create({
-      baseURL: 'https://api-inference.huggingface.co/models/vitouphy/wav2vec2-xls-r-300m-timit-phoneme',
-      headers: {
-        post: {
-          Authorization: `Bearer ${context.$config.hfApiSecret}`
-        }
-      },
-      withCredentials: true
+  const api = context.$axios.create({
+      baseURL: 'https://api-inference.huggingface.co/models/vitouphy/wav2vec2-xls-r-300m-timit-phoneme'
     });
+    api.setHeader('Content-Type', 'audio/webm', ['post'])
+    api.setToken(context.env.HF_API_SECRET, 'Bearer', ['post']);
 
     inject('huggingFaceApi', api);
 };

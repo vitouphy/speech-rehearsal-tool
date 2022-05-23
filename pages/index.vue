@@ -114,14 +114,9 @@ export default Vue.extend({
         this.recordingBlob = event.data;
 
         // Get phoneme
-        this.$huggingFaceApi
-          .post("/", this.recordingBlob)
-          .then(console.log)
-          .catch(console.log);
-
-        // some loggings
-        console.log(event);
-        console.log(this.$data.audioPath);
+        this.$axios.post('/api-phoneme', this.recordingBlob)
+        .then(console.log)
+        .catch(console.log);
       };
 
       // Set recording in 30 seconds

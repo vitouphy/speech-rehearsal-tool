@@ -47,5 +47,9 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     transpile: [/^element-ui/, /^api/],
-  }
+  },
+
+  serverMiddleware: [
+    { path: "/api-phoneme", handler: "@/server-middleware/huggingface-api.js" },
+  ],
 }
