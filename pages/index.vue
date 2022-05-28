@@ -42,17 +42,8 @@
             :stroke-width="5"
           ></el-progress>
         </div>
-        <!-- <el-button @click="convertText2Phoneme">Text2Phoneme</el-button> -->
         <audio-player :audioPath="this.audioPath"></audio-player>
-        <!-- <el-button
-          v-if="recordingBlob != null"
-          @click="downloadRecording(recordingBlob)"
-        >
-          <i class="el-icon-download"></i>
-          <span>Download</span>
-        </el-button> -->
       </div>
-
     </div>
   </div>
 </template>
@@ -61,6 +52,9 @@
 import { resolve } from "path";
 import Vue from "vue";
 import AudioPlayer from "~/components/AudioPlayer.vue";
+// import BioMSA from 'biomsa'
+const { NWaligner, SWaligner } = require('seqalign');
+import TextAlign from "~/scripts/text-aligner"
 
 export default Vue.extend({
   components: { AudioPlayer },
@@ -79,6 +73,7 @@ export default Vue.extend({
       recordingPhoneme: '',
       phonemeFromText: '',
       phonemeFromAudio: '',
+      breakdown: [],
       processingSpeech: false,
       constraints: {
         video: false,
@@ -88,6 +83,12 @@ export default Vue.extend({
         },
       },
     };
+  },
+  mounted() {
+    const text1 = "həloʊ wɜːld wɛlkʌm tuː maɪ vɛɹi nuː juːtuːb tʃænəl θɹiː".replace('ː', '')
+    const text2 = "hɛə ɛv riwənwoʊn kəm tumaɪrɛvɪnu ju tɪ ʧɪn"
+    const result = TextAlign.align(text1, text2)
+    console.log(result)
   },
   methods: {
     async clickButton() {
@@ -130,26 +131,30 @@ export default Vue.extend({
         this.stopRecording();
       }, this.totalDuration * 1000);
     },
-    // downloadRecording(blob: Blob) {
-    //   let link = document.createElement("a");
-    //   link.href = window.URL.createObjectURL(blob);
-    //   link.download = "filename";
-
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   document.body.removeChild(link);
-    // },
     startProcessing() {
       this.processingSpeech = true;
       this.getPhoneme()
       .then(phonemeFromAudio => {
-        console.log('Getting phoneme from Audio: ', phonemeFromAudio)
+        // console.log('Getting phoneme from Audio: ', phonemeFromAudio)
         this.phonemeFromAudio = phonemeFromAudio;
       })
       .then(() => this.convertText2Phoneme(this.textarea))
-      .then(phonemeFromText => {
-        console.log('Getting phoneme from Text: ', phonemeFromText)
-        this.phonemeFromText = phonemeFromText;
+      .then(phonemeFromTextRs => {
+        this.phonemeFromText = phonemeFromTextRs['phoneme'];
+        this.breakdown = phonemeFromTextRs['breakdown'];
+        // console.log('Getting phoneme from Text: ', phonemeFromTextRs['phoneme'])
+        // console.log('Breakdown: ', phonemeFromTextRs['breakdown'])
+        return phonemeFromTextRs['breakdown']
+      })
+      .then(breakdown => {
+        console.log('Getting phoneme from Audio: ', this.phonemeFromAudio)
+        console.log('Getting phoneme from Text: ', this.phonemeFromText.replace(':', ''))
+        const alignments = TextAlign.align(this.phonemeFromText.replace(':', ''), this.phonemeFromAudio)
+        for (var i=0; i<breakdown.length; i++) {
+          breakdown[i].push(alignments[i])
+        }
+        console.log("Breakdown: ", breakdown);
+        return breakdown;
       })
       .catch(console.log)
       .finally(() => {
@@ -157,8 +162,8 @@ export default Vue.extend({
       })
     },
     convertText2Phoneme(text: string) {
-      return this.$axios.get(`http://localhost:8000/convert?text=${this.textarea}`)
-        .then(response => response.data['phoneme'])
+      return this.$axios.get(`http://localhost:8000/convert?text=${this.textarea}&breakdown=true`)
+        .then(response => response.data)
         .catch(console.log);
     },
     getPhoneme(): Promise<string> {

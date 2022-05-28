@@ -7551,6 +7551,11 @@ send@0.18.0:
     range-parser "~1.2.1"
     statuses "2.0.1"
 
+seqalign@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/seqalign/-/seqalign-1.0.6.tgz#afddc9b5e0255f6338aada52ae6de2bd02b0e16f"
+  integrity sha512-3V1LVLVjJad+AT2nKUIUFJwenKFQl36wsMdMPoo9D3qovf4ULxsAFvKncp0gW/WL19sJA7A/M52n18QZH9Ac6A==
+
 serialize-javascript@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-3.1.0.tgz"
