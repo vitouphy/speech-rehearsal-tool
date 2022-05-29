@@ -8,8 +8,6 @@
       <div>
         <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" placeholder="Please input" v-model="textarea">
         </el-input>
-        <div>Phoneme From Audio: {{ phonemeFromAudio }}</div>
-        <div>Phoneme From Text: {{ phonemeFromText }}</div>
       </div>
       <div style="height: 50px"></div>
       <div style="display: flex; gap: 10px">
@@ -33,9 +31,11 @@ export default Vue.extend({
       textarea: "",
       audioPath: null as any as string,
       audioBlob: null as any,
-      phonemeFromText: "",
-      phonemeFromAudio: "",
-      breakdown: [],
+      // breakdown: [
+      //   ['hello', 'həloʊ', 'haʊlə'],
+      //   ['world', 'wɜːld', 'wʊ']
+      // ],
+      breakdowns: [] as any,
       processingSpeech: false,
     };
   },
@@ -43,35 +43,31 @@ export default Vue.extend({
     onFinishRecording(audioPath: any, audioBlob: any) {
       this.audioPath = audioPath;
       this.audioBlob = audioBlob;
-      this.startProcessing();
+      this.processing();
     },
-    startProcessing() {
+    async processing() {
       this.processingSpeech = true;
-      this.getPhoneme()
-      .then(phonemeFromAudio => {
-        this.phonemeFromAudio = phonemeFromAudio;
-      })
-      .then(() => this.convertText2Phoneme(this.textarea))
-      .then(phonemeFromTextRs => {
-        this.phonemeFromText = phonemeFromTextRs['phoneme'];
-        this.breakdown = phonemeFromTextRs['breakdown'];
-        return phonemeFromTextRs['breakdown']
-      })
-      .then(breakdown => {
-        const alignments = TextAlign.align(this.phonemeFromText.replace(':', ''), this.phonemeFromAudio)
-        for (var i=0; i<breakdown.length; i++) {
-          breakdown[i].push(alignments[i])
-        }
-        console.log("Breakdown: ", breakdown);
-        return breakdown;
-      })
-      .catch(console.log)
-      .finally(() => {
-        this.processingSpeech = false;
-      })
+      const phonemeFromAudio = await this.getPhoneme()
+      const phonemeFromTextRs = await this.convertText2Phoneme(this.textarea)
+      const phonemeFromText = phonemeFromTextRs['phoneme'];
+      const breakdowns = phonemeFromTextRs['breakdown'];
+      const alignments = TextAlign.align(phonemeFromText.replace(':', ''), phonemeFromAudio)
+
+      // Build breakdown
+      this.breakdowns = []
+      for (var i=0; i<breakdowns.length; i++) {
+        this.breakdowns.push({
+          source: breakdowns[i][0],
+          phonemeFromText: breakdowns[i][1],
+          phonemeFromAudio: alignments[i]
+        })
+      }
+
+      this.processingSpeech = false;
+      console.log("Breakdown: ", this.breakdowns);
     },
     convertText2Phoneme(text: string) {
-      return this.$axios.get(`http://localhost:8000/convert?text=${this.textarea}&breakdown=true`)
+      return this.$axios.get(`http://localhost:8000/convert?text=${text}&breakdown=true`)
         .then(response => response.data)
         .catch(console.log);
     },
