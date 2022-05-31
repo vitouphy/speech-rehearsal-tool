@@ -1,31 +1,73 @@
 <template>
   <div>
-    <el-menu class="el-menu-demo" mode="horizontal">
-      <el-menu-item index="1" style="float: none">Prepper</el-menu-item>
+    <el-menu mode="horizontal" style="text-align: center" background-color="#545c64">
+      <el-menu-item index="1" class="menu-item">PREPPER</el-menu-item>
     </el-menu>
-    <div style="width: 80%; left: 10%" v-loading="processingSpeech">
+    <el-container direction="vertical" class="main-container" v-loading="processingSpeech">
       <div style="height: 50px"></div>
       <div>
         <el-input
           type="textarea"
-          :autosize="{ minRows: 2, maxRows: 4 }"
-          placeholder="Please input"
+          style="font-size: 15px;"
+          :autosize="{ minRows: 6, maxRows: 10 }"
+          placeholder="Please input your speech here"
           v-model="textarea"
         />
-        <div>
-          <div style="width: 100%; display: flex; flex-wrap: wrap; column-gap: 7px">
-              <token v-for="(item, idx) in breakdowns" :key="idx" :item="item"/>
-          </div>
-        </div>
       </div>
-      <div style="height: 50px"></div>
-      <div style="display: flex; gap: 10px">
+      <div class="record-button-container">
         <voice-recorder :onFinishRecording="this.onFinishRecording" />
         <audio-player :audioPath="this.audioPath"></audio-player>
       </div>
-    </div>
+      <div>
+        <el-button
+          type="primary"
+          v-if="audioPath != null && audioBlob != null"
+          @click="this.processing"
+          >Analyze</el-button
+        >
+      </div>
+      
+      <div v-if="breakdowns.length > 0">
+        <hr style="margin: 50px 0;"/>
+        <h2>Result</h2>
+        <div class="text-result-container">
+          <token v-for="(item, idx) in breakdowns" :key="idx" :item="item" />
+        </div>
+      </div>
+    </el-container>
   </div>
 </template>
+
+
+<style scoped>
+
+.main-container {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.menu-item {
+  float: initial; 
+  color: white; 
+  font-size: 16px; 
+  font-family: 'Pacifico', cursive;
+}
+
+.record-button-container {
+  display: flex; 
+  gap: 10px; 
+  margin-bottom: 10px; 
+  margin-top: 10px;
+}
+
+.text-result-container {
+  width: 100%; 
+  display: flex; 
+  flex-wrap: wrap; 
+  column-gap: 7px;
+}
+
+</style>
 
 <script lang="ts">
 import Vue from "vue";
@@ -41,6 +83,273 @@ export default Vue.extend({
       textarea: "",
       audioPath: null as any as string,
       audioBlob: null as any,
+      // breakdowns: [
+      //   {
+      //     source: "hello",
+      //     phonemeFromText: "həloʊ",
+      //     phonemeFromAudio: "haʊlə",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      //   {
+      //     source: "world",
+      //     phonemeFromText: "wɜːld",
+      //     phonemeFromAudio: "wʊ",
+      //   },
+      // ],
       breakdowns: [] as any,
       processingSpeech: false,
     };
@@ -49,7 +358,6 @@ export default Vue.extend({
     onFinishRecording(audioPath: any, audioBlob: any) {
       this.audioPath = audioPath;
       this.audioBlob = audioBlob;
-      this.processing();
     },
     async processing() {
       this.processingSpeech = true;

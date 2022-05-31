@@ -12,8 +12,28 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css?family=Lato:400,700'
+      },
+      {
+        rel: 'preconnect',
+        href: "https://fonts.googleapis.com"
+      },
+      {
+        rel: 'preconnect',
+        href: "https://fonts.gstatic.com",
+        crossorigin: true
+      },
+      {
+        rel: 'stylesheet',
+        href: "https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      },
+    ],
+    bodyAttrs: {
+      style: "background-color: #f6f6f6; font-family: 'Lato', sans-serif;",
+    }
   },
   privateRuntimeConfig: {
     hfApiSecret: process.env.HF_API_SECRET
