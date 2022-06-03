@@ -122,11 +122,11 @@ export default Vue.extend({
       }
 
       this.processingSpeech = false;
-      console.log("Breakdown: ", this.breakdowns);
+      // console.log("Breakdown: ", this.breakdowns);
     },
     convertText2Phoneme(text: string) {
       return this.$axios
-        .get(`http://localhost:8000/convert?text=${text}&breakdown=true`)
+        .get(`/api/text2phoneme?text=${text}&breakdown=true`)
         .then((response) => response.data)
         .catch(console.log);
     },
@@ -136,7 +136,7 @@ export default Vue.extend({
         while (counter++ < 3) {
           try {
             let response = await this.$axios.post(
-              "/api-phoneme",
+              "/api/audio2phoneme",
               this.audioBlob
             );
             return resolve(response.data["text"]);

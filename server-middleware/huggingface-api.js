@@ -17,8 +17,8 @@ app.use(express.urlencoded({
 }));
 
 var router = express.Router();
-router.post('/', (req, res) => {
-    const apiUrl = 'https://api-inference.huggingface.co/models/vitouphy/wav2vec2-xls-r-300m-timit-phoneme';
+router.post('/audio2phoneme', (req, res) => {
+    const apiUrl = process.env.AUDIO_TO_PHONEME_URL;
     const config = {
         headers: {
             'Authorization': `Bearer ${process.env.HF_API_SECRET}`,
@@ -27,6 +27,23 @@ router.post('/', (req, res) => {
     };
 
     axios.post(apiUrl, req.rawBody, config)
+    .then(response => {
+        res.status(response.status).json(response.data);
+    })
+    .catch(error => {
+        res.status(error.response.status).json(error.response.data);
+    });
+})
+
+router.get('/text2phoneme', (req, res) => {
+    if (!req.query.hasOwnProperty('text')) {
+        return res.status(400).json();
+    }
+
+    const apiUrl = process.env.TEXT_TO_PHONEME_URL;
+    const params = { text: req.query.text };
+
+    axios.get(apiUrl, { params })
     .then(response => {
         res.status(response.status).json(response.data);
     })

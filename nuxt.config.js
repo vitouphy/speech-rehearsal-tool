@@ -70,6 +70,6 @@ export default {
   },
 
   serverMiddleware: [
-    { path: "/api-phoneme", handler: "@/server-middleware/huggingface-api.js" },
+    { path: "/api/", handler: "@/server-middleware/huggingface-api.js" },
   ],
 }
