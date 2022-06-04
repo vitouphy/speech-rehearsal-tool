@@ -135,10 +135,7 @@ export default Vue.extend({
         let counter = 0;
         while (counter++ < 3) {
           try {
-            let response = await this.$axios.post(
-              "/api/audio2phoneme",
-              this.audioBlob
-            );
+            let response = await this.$axios.post("/api/audio2phoneme", this.audioBlob);
             return resolve(response.data["text"]);
           } catch (error) {
             await new Promise((resolve2) => setTimeout(resolve2, 1000 * 60));
