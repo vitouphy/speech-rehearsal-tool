@@ -3,7 +3,7 @@ export default {
     host: '0.0.0.0',
     port: 3000
   },
-  
+
   publicRuntimeConfig: {
     axios: {
       browserBaseURL: process.env.BROWSER_BASE_URL
@@ -81,6 +81,6 @@ export default {
   },
 
   serverMiddleware: [
-    { path: "/api/", handler: __dirname + "/server-middleware/huggingface-api.js" },
+    { path: "/api/", handler: __dirname + "/server-middleware/api.js" },
   ],
 }

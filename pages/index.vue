@@ -91,6 +91,13 @@ export default Vue.extend({
       textarea: "",
       audioPath: null as any as string,
       audioBlob: null as any,
+      // breakdowns: [
+      //   { 
+      //     source: 'hello', 
+      //     phonemeFromText: 'hello', 
+      //     phonemeFromAudio: 'helloz' 
+      //   }
+      // ],
       breakdowns: [] as any,
       processingSpeech: false,
     };
@@ -122,12 +129,13 @@ export default Vue.extend({
       }
 
       this.processingSpeech = false;
-      // console.log("Breakdown: ", this.breakdowns);
     },
     convertText2Phoneme(text: string) {
       return this.$axios
         .get(`/api/text2phoneme?text=${text}&breakdown=true`)
-        .then((response) => response.data)
+        .then((response) => {
+          return response.data
+        })
         .catch(console.log);
     },
     getPhoneme(): Promise<string> {

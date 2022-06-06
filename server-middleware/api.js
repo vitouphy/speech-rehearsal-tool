@@ -1,8 +1,14 @@
 const express = require('express')
+const sdk = require("microsoft-cognitiveservices-speech-sdk");
 const axios = require('axios')
 const app = express()
+// init Log
 var expressWinston = require('express-winston');
 var winston = require('winston'); // for transports.Console
+// init SpeechConfig 
+const speechConfig = sdk.SpeechConfig.fromSubscription(process.env.SPEECH_API_KEY, process.env.SPEECH_API_REGION);
+speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; 
+
 
 app.use(express.json({
     verify: function (req, res, buf, encoding) {
@@ -15,6 +21,7 @@ app.use(express.urlencoded({
         req.rawBody = buf;
     }
 }));
+
 
 var router = express.Router();
 router.post('/audio2phoneme', (req, res) => {
@@ -50,6 +57,32 @@ router.get('/text2phoneme', (req, res) => {
     .catch(error => {
         res.status(error.response.status).json(error.response.data);
     });
+})
+
+router.get('/text2speech', (req, res) => {
+    if (!req.query.hasOwnProperty('text')) {
+        return res.status(400).json();
+    }
+    
+    var synthesizer = new sdk.SpeechSynthesizer(speechConfig);
+    synthesizer.speakTextAsync(req.query.text, 
+        function (result) {
+            if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+                // Convert audio buffer into base64
+                result.audio = Buffer.from(result.audioData).toString('base64');
+                res.json(result)
+            } else {
+                console.error("Speech synthesis canceled, " + result.errorDetails + "\nDid you set the speech resource key and region values?");
+            }
+            synthesizer.close();
+            synthesizer = null;
+        },
+        function (err) {
+            console.trace("err - " + err);
+            synthesizer.close();
+            synthesizer = null;
+        }
+    );
 })
 
 
