@@ -13,6 +13,12 @@
       v-loading="processingSpeech"
     >
       <div style="height: 50px"></div>
+      <div style="text-align: right">
+        <el-button style="margin-bottom: 5px;" @click="dialogVisible = true">
+          <i class="el-icon-s-data"></i>
+          Past Performances
+        </el-button>
+      </div>
       <div>
         <el-input
           type="textarea"
@@ -37,7 +43,13 @@
 
       <div v-if="breakdowns.length > 0">
         <hr style="margin: 50px 0" />
-        <h2>Result</h2>
+        <div style="margin-bottom: 10px">
+          <h2>Result</h2>
+          <span>
+            <span style="font-weight: bold;">{{totalScore}}</span> 
+            <span>/ 1.00</span>
+          </span>
+        </div>
         <el-card class="box-card">
           <div class="text-result-container">
             <token v-for="(item, idx) in breakdowns" :key="idx" :item="item" />
@@ -45,7 +57,34 @@
         </el-card>
       </div>
     </el-container>
-    {{userId}}
+    
+
+    <el-dialog
+      title="History"
+      :visible.sync="dialogVisible"
+      width="40%">
+      <div>
+        <el-table
+        :data="scoreHistory"
+        style="width: 100%"
+        >
+          <el-table-column
+            prop="date"
+            label="Date"
+            width="180">
+          </el-table-column>
+          <el-table-column
+            prop="score"
+            label="Score"
+            width="180">
+          </el-table-column>
+        </el-table>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogVisible = false">Close</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -87,7 +126,7 @@ const { v4: uuidv4 } = require('uuid');
 import longestCommonSubsequence from "~/scripts/longest-common-subsequence";
 
 export default Vue.extend({
-  components: { AudioPlayer, Token },
+  components: { AudioPlayer, Token,  },
   name: "IndexPage",
   computed: {
     userId: () => {
@@ -99,13 +138,27 @@ export default Vue.extend({
       }
     }
   },
+  mounted() {
+    this.fetchUserScoresFromDB()
+  },
   data() {
     return {
+      dialogVisible: false,
       textarea: "",
       audioPath: null as any as string,
       audioBlob: null as any,
+      // breakdowns: [
+      //   { 
+      //     source: 'hello', 
+      //     phonemeFromText: 'hello', 
+      //     phonemeFromAudio: 'helloz' ,
+      //     score: 0.8,
+      //   }
+      // ],
       breakdowns: [] as any,
       processingSpeech: false,
+      scoreHistory: [] as any,
+      totalScore: null as any,
     };
   },
   methods: {
@@ -144,6 +197,11 @@ export default Vue.extend({
       }
       if (this.breakdowns.length > 0) {
         totalScore /= this.breakdowns.length
+        this.totalScore = totalScore.toFixed(4)
+        this.scoreHistory.unshift({
+          date: new Date().toLocaleString(),
+          score: this.totalScore
+        })
         this.recordScoreToDB(totalScore)
       }
 
@@ -158,6 +216,20 @@ export default Vue.extend({
         .post('/api/score', data)
         .then((response) => response.data)
         .catch(console.log);
+    },
+    fetchUserScoresFromDB() {
+      this.$axios.get(`/api/score/${this.userId}`)
+      .then((response) => {
+        let items = []
+        for (let item of response.data) {
+          items.push({
+            date: new Date(item.createdAt).toLocaleString(),
+            score: item.score.toFixed(4)
+          })
+        }
+        this.scoreHistory = items
+      })
+      .catch(console.log);
     },
     convertText2Phoneme(text: string) {
       return this.$axios

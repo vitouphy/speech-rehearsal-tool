@@ -28,7 +28,8 @@ const CONSTRAINTS = {
   video: false,
   audio: {
     channelCount: 1,
-    echoCancellation: false,
+    echoCancellation: true,
+    sampleRate: { min: 16000, ideal: 16000 },
   },
 }
 

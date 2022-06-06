@@ -24,11 +24,13 @@ const container = database.container(containerId);
   
 
 app.use(express.json({
+    limit: '10mb',
     verify: function (req, res, buf, encoding) {
         req.rawBody = buf;
     }
 }));
 app.use(express.urlencoded({
+    limit: '10mb',
     extended: false,
     verify: function (req, res, buf, encoding) {
         req.rawBody = buf;
@@ -113,7 +115,7 @@ router.post('/score', async (req, res) => {
 // Get Score for each user
 router.get('/score/:userId', async (req, res) => {
     const querySpec = {
-        query: "SELECT * from c WHERE c.userId = @userIdStr",
+        query: "SELECT * from c WHERE c.userId = @userIdStr ORDER BY c.createdAt DESC",
         parameters: [
             { name: "@userIdStr", value: req.params.userId }
         ]
