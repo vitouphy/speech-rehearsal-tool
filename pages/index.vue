@@ -45,6 +45,7 @@
         </el-card>
       </div>
     </el-container>
+    {{userId}}
   </div>
 </template>
 
@@ -82,22 +83,27 @@ import Vue from "vue";
 import AudioPlayer from "~/components/AudioPlayer.vue";
 import Token from "~/components/Token.vue";
 import TextAlign from "~/scripts/text-aligner";
+const { v4: uuidv4 } = require('uuid');
+import longestCommonSubsequence from "~/scripts/longest-common-subsequence";
 
 export default Vue.extend({
   components: { AudioPlayer, Token },
   name: "IndexPage",
+  computed: {
+    userId: () => {
+      if (process.client) {
+        if (localStorage.getItem('userId') == null) {
+          localStorage.setItem('userId', uuidv4());
+        }
+        return localStorage.getItem('userId');
+      }
+    }
+  },
   data() {
     return {
       textarea: "",
       audioPath: null as any as string,
       audioBlob: null as any,
-      // breakdowns: [
-      //   { 
-      //     source: 'hello', 
-      //     phonemeFromText: 'hello', 
-      //     phonemeFromAudio: 'helloz' 
-      //   }
-      // ],
       breakdowns: [] as any,
       processingSpeech: false,
     };
@@ -119,23 +125,44 @@ export default Vue.extend({
       );
 
       // Build breakdown
+      let totalScore = 0;
       this.breakdowns = [];
       for (var i = 0; i < breakdowns.length; i++) {
+        const bdPhoneFromText = breakdowns[i][1].replace(":", "").replace("ː", "")
+        const bdPhoneFromAudio = alignments[i]
+        const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio) 
+        const score = (bdPhoneFromText.length == 0) ? 0 : lcs.length / bdPhoneFromText.length;
+    
         this.breakdowns.push({
           source: breakdowns[i][0],
-          phonemeFromText: breakdowns[i][1],
-          phonemeFromAudio: alignments[i],
+          phonemeFromText: bdPhoneFromText,
+          phonemeFromAudio: bdPhoneFromAudio,
+          score: score
         });
+
+        totalScore += score;
+      }
+      if (this.breakdowns.length > 0) {
+        totalScore /= this.breakdowns.length
+        this.recordScoreToDB(totalScore)
       }
 
       this.processingSpeech = false;
     },
+    recordScoreToDB(score: Number) {
+      const data = {
+        userId: this.userId,
+        score: score
+      }
+      this.$axios
+        .post('/api/score', data)
+        .then((response) => response.data)
+        .catch(console.log);
+    },
     convertText2Phoneme(text: string) {
       return this.$axios
         .get(`/api/text2phoneme?text=${text}&breakdown=true`)
-        .then((response) => {
-          return response.data
-        })
+        .then((response) => response.data)
         .catch(console.log);
     },
     getPhoneme(): Promise<string> {
