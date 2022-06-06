@@ -8,7 +8,20 @@ var winston = require('winston'); // for transports.Console
 // init SpeechConfig 
 const speechConfig = sdk.SpeechConfig.fromSubscription(process.env.SPEECH_API_KEY, process.env.SPEECH_API_REGION);
 speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural"; 
-
+// Cosmos DB
+const CosmosClient = require("@azure/cosmos").CosmosClient;
+const config = {
+    endpoint: process.env.AZURE_COSMOS_ENDPOINT,
+    key: process.env.AZURE_COSMOS_KEY,
+    databaseId: "PrepperDB",
+    containerId: "Scores",
+    partitionKey: { kind: "Hash", paths: ["/scores"] }
+};
+const { endpoint, key, databaseId, containerId } = config;
+const client = new CosmosClient({ endpoint, key });
+const database = client.database(databaseId);
+const container = database.container(containerId);
+  
 
 app.use(express.json({
     verify: function (req, res, buf, encoding) {
@@ -84,6 +97,33 @@ router.get('/text2speech', (req, res) => {
         }
     );
 })
+
+
+// Insert DB
+router.post('/score', async (req, res) => {
+    const newItem = {
+        userId: req.body.userId,
+        score: req.body.score,
+        createdAt: Date.now()
+    }
+    await container.items.create(newItem);
+    res.send(newItem)
+});
+
+// Get Score for each user
+router.get('/score/:userId', async (req, res) => {
+    const querySpec = {
+        query: "SELECT * from c WHERE c.userId = @userIdStr",
+        parameters: [
+            { name: "@userIdStr", value: req.params.userId }
+        ]
+    };
+    const { resources: items } = await container.items
+    .query(querySpec)
+    .fetchAll();
+
+    res.send(items)
+});
 
 
 // express-winston logger makes sense BEFORE the router

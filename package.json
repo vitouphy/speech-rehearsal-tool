@@ -9,6 +9,7 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@azure/cosmos": "^3.16.1",
     "@codekraft-studio/vue-record": "^0.0.3",
     "@nuxtjs/axios": "^5.13.6",
     "@types/dom-mediacapture-record": "^1.0.11",
