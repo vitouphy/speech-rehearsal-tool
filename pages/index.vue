@@ -150,8 +150,8 @@ export default Vue.extend({
       // breakdowns: [
       //   { 
       //     source: 'hello', 
-      //     phonemeFromText: 'hello', 
-      //     phonemeFromAudio: 'helloz' ,
+      //     phonemeFromText: 'hebbo', 
+      //     phonemeFromAudio: 'helloz',
       //     score: 0.8,
       //   }
       // ],

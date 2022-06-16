@@ -1,18 +1,16 @@
 <template>
   <el-popover placement="bottom" trigger="click" v-model="isVisible">
     <div>
-      <div>
-        <span>Actual</span>
-      </div>
+      <div>Pronunciation</div>
       <div style="font-size: 24px">
-        <span>{{ item["phonemeFromText"] }}</span>
+        <span 
+          v-for="(char, index) in compareTextAndAudioPhoneme(item['phonemeFromText'], item['phonemeFromAudio'])"
+          :key="index"
+          :style="{ color: char[1] ? 'green' : 'red' }"
+          >{{char[0]}}</span>
         <el-button type="text" @click="playAudio">
           <i class="el-icon-chat-line-round" style="font-size: 20px"></i>
         </el-button>
-      </div>
-      <div>User</div>
-      <div style="font-size: 24px">
-        {{ item["phonemeFromAudio"] }}
       </div>
     </div>
     <span slot="reference" 
@@ -61,6 +59,18 @@ export default Vue.extend({
         this.audio.play()
       }
     },
+    compareTextAndAudioPhoneme(text1: string, text2: string) {
+      const lcs = longestCommonSubsequence(text1, text2) 
+      let arr = [];
+      let lcsIndex = 0;
+      for (let c of text1) {
+        arr.push([c, c == lcs[lcsIndex]]);
+        if (c == lcs[lcsIndex]) {
+          lcsIndex += 1;
+        }
+      }
+      return arr;
+    }
   },
 });
 </script>
