@@ -43,7 +43,7 @@ export default Vue.extend({
   methods: {
     convertText2Speech(text: string) {
       return this.$axios
-        .get(`/api/text2speech?text=${text}`)
+        .get(`/text2speech?text=${text}`)
         .then((response) => {
           const audioData = Uint8Array.from(atob(response.data.audio), (c) => c.charCodeAt(0));
           this.audioUrl = window.URL.createObjectURL(new Blob([audioData]));

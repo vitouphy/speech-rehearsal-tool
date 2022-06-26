@@ -42,11 +42,11 @@
       </div>
 
       <div v-if="breakdowns.length > 0">
-        <hr style="margin: 50px 0" />
+        <hr style="margin: 50px 0"/>
         <div style="margin-bottom: 10px">
           <h2>Result</h2>
           <span>
-            <span style="font-weight: bold;">{{totalScore}}</span> 
+            <span style="font-weight: bold;">{{totalScore}}</span>
             <span>/ 1.00</span>
           </span>
         </div>
@@ -57,7 +57,7 @@
         </el-card>
       </div>
     </el-container>
-    
+
 
     <el-dialog
       title="History"
@@ -139,7 +139,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.fetchUserScoresFromDB()
+    // this.fetchUserScoresFromDB()
   },
   data() {
     return {
@@ -148,9 +148,9 @@ export default Vue.extend({
       audioPath: null as any as string,
       audioBlob: null as any,
       // breakdowns: [
-      //   { 
-      //     source: 'hello', 
-      //     phonemeFromText: 'hebbo', 
+      //   {
+      //     source: 'hello',
+      //     phonemeFromText: 'hebbo',
       //     phonemeFromAudio: 'helloz',
       //     score: 0.8,
       //   }
@@ -183,9 +183,9 @@ export default Vue.extend({
       for (var i = 0; i < breakdowns.length; i++) {
         const bdPhoneFromText = breakdowns[i][1].replace(":", "").replace("ː", "")
         const bdPhoneFromAudio = alignments[i]
-        const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio) 
+        const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio)
         const score = (bdPhoneFromText.length == 0) ? 0 : lcs.length / bdPhoneFromText.length;
-    
+
         this.breakdowns.push({
           source: breakdowns[i][0],
           phonemeFromText: bdPhoneFromText,
@@ -202,38 +202,38 @@ export default Vue.extend({
           date: new Date().toLocaleString(),
           score: this.totalScore
         })
-        this.recordScoreToDB(totalScore)
+        // this.recordScoreToDB(totalScore)
       }
 
       this.processingSpeech = false;
     },
-    recordScoreToDB(score: Number) {
-      const data = {
-        userId: this.userId,
-        score: score
-      }
-      this.$axios
-        .post('/api/score', data)
-        .then((response) => response.data)
-        .catch(console.log);
-    },
-    fetchUserScoresFromDB() {
-      this.$axios.get(`/api/score/${this.userId}`)
-      .then((response) => {
-        let items = []
-        for (let item of response.data) {
-          items.push({
-            date: new Date(item.createdAt).toLocaleString(),
-            score: item.score.toFixed(4)
-          })
-        }
-        this.scoreHistory = items
-      })
-      .catch(console.log);
-    },
+    // recordScoreToDB(score: Number) {
+    //   const data = {
+    //     userId: this.userId,
+    //     score: score
+    //   }
+    //   this.$axios
+    //     .post('/api/score', data)
+    //     .then((response) => response.data)
+    //     .catch(console.log);
+    // },
+    // fetchUserScoresFromDB() {
+    //   this.$axios.get(`/api/score/${this.userId}`)
+    //   .then((response) => {
+    //     let items = []
+    //     for (let item of response.data) {
+    //       items.push({
+    //         date: new Date(item.createdAt).toLocaleString(),
+    //         score: item.score.toFixed(4)
+    //       })
+    //     }
+    //     this.scoreHistory = items
+    //   })
+    //   .catch(console.log);
+    // },
     convertText2Phoneme(text: string) {
       return this.$axios
-        .get(`/api/text2phoneme?text=${text}&breakdown=true`)
+        .get(`/text2phoneme?text=${text}&breakdown=true`)
         .then((response) => response.data)
         .catch(console.log);
     },
@@ -242,7 +242,8 @@ export default Vue.extend({
         let counter = 0;
         while (counter++ < 3) {
           try {
-            let response = await this.$axios.post("/api/audio2phoneme", this.audioBlob);
+            const config = { headers: {'Content-Type': 'audio/webm'} };
+            let response = await this.$axios.post("/audio2phoneme", this.audioBlob, config);
             return resolve(response.data["text"]);
           } catch (error) {
             await new Promise((resolve2) => setTimeout(resolve2, 1000 * 60));

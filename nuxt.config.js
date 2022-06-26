@@ -1,7 +1,16 @@
 export default {
-  server: {
-    host: '0.0.0.0',
-    port: 3000
+  target: 'static',
+  // server: {
+  //   host: '0.0.0.0',
+  //   port: 3000
+  // },
+
+  axios: {
+    headers: {
+      common: {
+        // 'x-api-key': 'aJwPuavadY7WMoQM6HHzG4cGiN4FrpAx5BJVattR',
+      }
+    }
   },
 
   publicRuntimeConfig: {
