@@ -15,7 +15,7 @@
     </div>
     <span slot="reference" 
           :class="{ highlight: isVisible }"
-          :style="{ color: item['score'] > 0.7 ? 'green' : (item['score'] > 0.3 ? 'orange' : '#e40000')}">
+          :style="{ color: item['score'] >= 0.5 ? 'green' : (item['score'] > 0.25 ? 'orange' : '#e40000')}">
       {{ item["source"] }}
     </span>
   </el-popover>
@@ -45,8 +45,9 @@ export default Vue.extend({
       return this.$axios
         .get(`/text2speech?text=${text}`)
         .then((response) => {
-          const audioData = Uint8Array.from(atob(response.data.audio), (c) => c.charCodeAt(0));
-          this.audioUrl = window.URL.createObjectURL(new Blob([audioData]));
+          const buf = Buffer.from(response.data.audio, 'base64')
+          const blob = new Blob([buf], { type: 'audio/wav' });
+          this.audioUrl = window.URL.createObjectURL(blob);
         })
         .catch(console.log);
     },

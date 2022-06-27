@@ -10,7 +10,6 @@
     <el-container
       direction="vertical"
       class="main-container"
-      v-loading="processingSpeech"
     >
       <div style="height: 50px"></div>
       <div style="text-align: right">
@@ -26,6 +25,7 @@
           :autosize="{ minRows: 6, maxRows: 10 }"
           placeholder="Please input your speech here"
           v-model="textarea"
+          :disabled="this.processingSpeech"
         />
       </div>
       <div class="record-button-container">
@@ -37,10 +37,20 @@
           type="primary"
           v-if="audioPath != null && audioBlob != null"
           @click="this.processing"
-          >Analyze</el-button
+          :disabled="this.processingSpeech"
+        >
+        Analyze
+        </el-button
         >
       </div>
-
+      <div>
+        <el-progress 
+          v-if="this.processingSpeech"
+          :percentage="progress" 
+          :format="''"
+        >
+        </el-progress>
+      </div>
       <div v-if="breakdowns.length > 0">
         <hr style="margin: 50px 0"/>
         <div style="margin-bottom: 10px">
@@ -57,8 +67,6 @@
         </el-card>
       </div>
     </el-container>
-
-
     <el-dialog
       title="History"
       :visible.sync="dialogVisible"
@@ -84,7 +92,6 @@
         <el-button type="primary" @click="dialogVisible = false">Close</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -139,6 +146,7 @@ export default Vue.extend({
     }
   },
   mounted() {
+    this.getPhoneme();
     // this.fetchUserScoresFromDB()
   },
   data() {
@@ -157,6 +165,7 @@ export default Vue.extend({
       // ],
       breakdowns: [] as any,
       processingSpeech: false,
+      progress: 0,
       scoreHistory: [] as any,
       totalScore: null as any,
     };
@@ -168,6 +177,7 @@ export default Vue.extend({
     },
     async processing() {
       this.processingSpeech = true;
+      this.progress = 0;
       const phonemeFromAudio = await this.getPhoneme();
       const phonemeFromTextRs = await this.convertText2Phoneme(this.textarea);
       const phonemeFromText = phonemeFromTextRs["phoneme"];
@@ -176,6 +186,8 @@ export default Vue.extend({
         phonemeFromText.replace(":", ""),
         phonemeFromAudio
       );
+
+      this.progress = 100;
 
       // Build breakdown
       let totalScore = 0;
@@ -232,6 +244,7 @@ export default Vue.extend({
     //   .catch(console.log);
     // },
     convertText2Phoneme(text: string) {
+      this.progress = 70;
       return this.$axios
         .get(`/text2phoneme?text=${text}&breakdown=true`)
         .then((response) => response.data)
@@ -241,6 +254,7 @@ export default Vue.extend({
       return new Promise(async (resolve) => {
         let counter = 0;
         while (counter++ < 3) {
+          this.progress = 20 * counter;
           try {
             const config = { headers: {'Content-Type': 'audio/webm'} };
             let response = await this.$axios.post("/audio2phoneme", this.audioBlob, config);
