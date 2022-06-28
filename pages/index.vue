@@ -62,7 +62,7 @@
         </div>
         <el-card class="box-card">
           <div class="text-result-container">
-            <token v-for="(item, idx) in breakdowns" :key="idx" :item="item" />
+            <token v-for="(item, idx) in breakdowns" :key="idx" :item="item"/>
           </div>
         </el-card>
       </div>
@@ -196,7 +196,7 @@ export default Vue.extend({
         const bdPhoneFromText = breakdowns[i][1].replace(":", "").replace("ː", "")
         const bdPhoneFromAudio = alignments[i]
         const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio)
-        const score = (bdPhoneFromText.length == 0) ? 0 : lcs.length / bdPhoneFromText.length;
+        const score = (bdPhoneFromText.length == 0) ? 0 : (lcs.length / bdPhoneFromText.length);
 
         this.breakdowns.push({
           source: breakdowns[i][0],
@@ -248,7 +248,7 @@ export default Vue.extend({
       return this.$axios
         .get(`/text2phoneme?text=${text}&breakdown=true`)
         .then((response) => response.data)
-        .catch(console.log);
+        .catch(this.handleError);
     },
     getPhoneme(): Promise<string> {
       return new Promise(async (resolve) => {
@@ -260,11 +260,17 @@ export default Vue.extend({
             let response = await this.$axios.post("/audio2phoneme", this.audioBlob, config);
             return resolve(response.data["text"]);
           } catch (error) {
-            await new Promise((resolve2) => setTimeout(resolve2, 1000 * 60));
+            await new Promise((resolve2) => setTimeout(resolve2, 1000 * 30));
           }
         }
+        this.handleError('Error while converting audio to phoneme.')
       });
     },
+    handleError(error: any): void {
+      this.progress = 0;
+      this.processingSpeech = false;
+      console.log(error)
+    }
   },
 });
 </script>
