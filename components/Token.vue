@@ -30,6 +30,7 @@
 <script lang="ts">
 import Vue from "vue";
 import longestCommonSubsequence from "~/scripts/longest-common-subsequence";
+import phonemeNormalizer from "~/scripts/phoneme-normalizer";
 
 export default Vue.extend({
   props: ["item"],
@@ -61,11 +62,22 @@ export default Vue.extend({
       }
     },
     compareTextAndAudioPhoneme(text1: string, text2: string) {
-      const lcs = longestCommonSubsequence(text1, text2) 
+      // Calculate the score using normalized text, but display using the real one
+      const normalizedText1 = phonemeNormalizer.normalize(text1)
+      const normalizedText2 = phonemeNormalizer.normalize(text2)
+      const lcs = longestCommonSubsequence(normalizedText1, normalizedText2) 
+
       let arr = [];
       let lcsIndex = 0;
-      for (let c of text1) {
-        arr.push([c, c == lcs[lcsIndex]]);
+      for (let [idx, c] of normalizedText1.split('').entries()) {
+
+        // Explicitly ignore the stress
+        if (c == "ː") {
+          arr.push(["ː", true]);
+          continue;
+        }
+
+        arr.push([text1[idx], c == lcs[lcsIndex]]);
         if (c == lcs[lcsIndex]) {
           lcsIndex += 1;
         }

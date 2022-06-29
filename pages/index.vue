@@ -12,12 +12,12 @@
       class="main-container"
     >
       <div style="height: 50px"></div>
-      <div style="text-align: right">
+      <!-- <div style="text-align: right">
         <el-button style="margin-bottom: 5px;" @click="dialogVisible = true">
           <i class="el-icon-s-data"></i>
           Past Performances
         </el-button>
-      </div>
+      </div> -->
       <div>
         <el-input
           type="textarea"
@@ -131,6 +131,7 @@ import Token from "~/components/Token.vue";
 import TextAlign from "~/scripts/text-aligner";
 const { v4: uuidv4 } = require('uuid');
 import longestCommonSubsequence from "~/scripts/longest-common-subsequence";
+import phonemeNormalizer from "~/scripts/phoneme-normalizer";
 
 export default Vue.extend({
   components: { AudioPlayer, Token,  },
@@ -146,6 +147,7 @@ export default Vue.extend({
     }
   },
   mounted() {
+    // console.log(phonemeNormalizer.normalize("hell:ɨo"))
     this.getPhoneme();
     // this.fetchUserScoresFromDB()
   },
@@ -158,8 +160,8 @@ export default Vue.extend({
       // breakdowns: [
       //   {
       //     source: 'hello',
-      //     phonemeFromText: 'hebbo',
-      //     phonemeFromAudio: 'helloz',
+      //     phonemeFromText: 'hellːɨo',
+      //     phonemeFromAudio: 'helltoz',
       //     score: 0.8,
       //   }
       // ],
@@ -182,10 +184,7 @@ export default Vue.extend({
       const phonemeFromTextRs = await this.convertText2Phoneme(this.textarea);
       const phonemeFromText = phonemeFromTextRs["phoneme"];
       const breakdowns = phonemeFromTextRs["breakdown"];
-      const alignments = TextAlign.align(
-        phonemeFromText.replace(":", ""),
-        phonemeFromAudio
-      );
+      const alignments = TextAlign.align(phonemeFromText,phonemeFromAudio);
 
       this.progress = 100;
 
@@ -193,9 +192,10 @@ export default Vue.extend({
       let totalScore = 0;
       this.breakdowns = [];
       for (var i = 0; i < breakdowns.length; i++) {
-        const bdPhoneFromText = breakdowns[i][1].replace(":", "").replace("ː", "")
+        const bdPhoneFromText = breakdowns[i][1]
+        const normalizedPhoneFromText = phonemeNormalizer.normalize(bdPhoneFromText.replace("ː", ""))
         const bdPhoneFromAudio = alignments[i]
-        const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio)
+        const lcs = longestCommonSubsequence(normalizedPhoneFromText, bdPhoneFromAudio)
         const score = (bdPhoneFromText.length == 0) ? 0 : (lcs.length / bdPhoneFromText.length);
 
         this.breakdowns.push({
