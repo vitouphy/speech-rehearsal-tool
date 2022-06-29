@@ -1,9 +1,9 @@
 export default {
-  server: {
-    host: '0.0.0.0',
-    port: 3000
-  },
-
+  target: 'static',
+  // server: {
+  //   host: '0.0.0.0',
+  //   port: 3000
+  // },
   publicRuntimeConfig: {
     axios: {
       browserBaseURL: process.env.BROWSER_BASE_URL
@@ -46,9 +46,9 @@ export default {
       style: "background-color: #f6f6f6; font-family: 'Lato', sans-serif;",
     }
   },
-  privateRuntimeConfig: {
-    hfApiSecret: process.env.HF_API_SECRET
-  },
+  // privateRuntimeConfig: {
+  //   hfApiSecret: process.env.HF_API_SECRET
+  // },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
@@ -58,7 +58,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '@/plugins/element-ui',
-    '@/plugins/huggingface-api.ts'
+    // '@/plugins/huggingface-api.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

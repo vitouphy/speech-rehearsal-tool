@@ -10,15 +10,14 @@
     <el-container
       direction="vertical"
       class="main-container"
-      v-loading="processingSpeech"
     >
       <div style="height: 50px"></div>
-      <div style="text-align: right">
+      <!-- <div style="text-align: right">
         <el-button style="margin-bottom: 5px;" @click="dialogVisible = true">
           <i class="el-icon-s-data"></i>
           Past Performances
         </el-button>
-      </div>
+      </div> -->
       <div>
         <el-input
           type="textarea"
@@ -26,6 +25,7 @@
           :autosize="{ minRows: 6, maxRows: 10 }"
           placeholder="Please input your speech here"
           v-model="textarea"
+          :disabled="this.processingSpeech"
         />
       </div>
       <div class="record-button-container">
@@ -37,28 +37,36 @@
           type="primary"
           v-if="audioPath != null && audioBlob != null"
           @click="this.processing"
-          >Analyze</el-button
+          :disabled="this.processingSpeech"
+        >
+        Analyze
+        </el-button
         >
       </div>
-
+      <div>
+        <el-progress 
+          v-if="this.processingSpeech"
+          :percentage="progress" 
+          :format="''"
+        >
+        </el-progress>
+      </div>
       <div v-if="breakdowns.length > 0">
-        <hr style="margin: 50px 0" />
+        <hr style="margin: 50px 0"/>
         <div style="margin-bottom: 10px">
           <h2>Result</h2>
           <span>
-            <span style="font-weight: bold;">{{totalScore}}</span> 
+            <span style="font-weight: bold;">{{totalScore}}</span>
             <span>/ 1.00</span>
           </span>
         </div>
         <el-card class="box-card">
           <div class="text-result-container">
-            <token v-for="(item, idx) in breakdowns" :key="idx" :item="item" />
+            <token v-for="(item, idx) in breakdowns" :key="idx" :item="item"/>
           </div>
         </el-card>
       </div>
     </el-container>
-    
-
     <el-dialog
       title="History"
       :visible.sync="dialogVisible"
@@ -84,7 +92,6 @@
         <el-button type="primary" @click="dialogVisible = false">Close</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -124,6 +131,7 @@ import Token from "~/components/Token.vue";
 import TextAlign from "~/scripts/text-aligner";
 const { v4: uuidv4 } = require('uuid');
 import longestCommonSubsequence from "~/scripts/longest-common-subsequence";
+import phonemeNormalizer from "~/scripts/phoneme-normalizer";
 
 export default Vue.extend({
   components: { AudioPlayer, Token,  },
@@ -139,7 +147,9 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.fetchUserScoresFromDB()
+    // console.log(phonemeNormalizer.normalize("hell:ɨo"))
+    this.getPhoneme();
+    // this.fetchUserScoresFromDB()
   },
   data() {
     return {
@@ -148,15 +158,16 @@ export default Vue.extend({
       audioPath: null as any as string,
       audioBlob: null as any,
       // breakdowns: [
-      //   { 
-      //     source: 'hello', 
-      //     phonemeFromText: 'hello', 
-      //     phonemeFromAudio: 'helloz' ,
+      //   {
+      //     source: 'hello',
+      //     phonemeFromText: 'hellːɨo',
+      //     phonemeFromAudio: 'helltoz',
       //     score: 0.8,
       //   }
       // ],
       breakdowns: [] as any,
       processingSpeech: false,
+      progress: 0,
       scoreHistory: [] as any,
       totalScore: null as any,
     };
@@ -168,24 +179,25 @@ export default Vue.extend({
     },
     async processing() {
       this.processingSpeech = true;
+      this.progress = 0;
       const phonemeFromAudio = await this.getPhoneme();
       const phonemeFromTextRs = await this.convertText2Phoneme(this.textarea);
       const phonemeFromText = phonemeFromTextRs["phoneme"];
       const breakdowns = phonemeFromTextRs["breakdown"];
-      const alignments = TextAlign.align(
-        phonemeFromText.replace(":", ""),
-        phonemeFromAudio
-      );
+      const alignments = TextAlign.align(phonemeFromText,phonemeFromAudio);
+
+      this.progress = 100;
 
       // Build breakdown
       let totalScore = 0;
       this.breakdowns = [];
       for (var i = 0; i < breakdowns.length; i++) {
-        const bdPhoneFromText = breakdowns[i][1].replace(":", "").replace("ː", "")
+        const bdPhoneFromText = breakdowns[i][1]
+        const normalizedPhoneFromText = phonemeNormalizer.normalize(bdPhoneFromText.replace("ː", ""))
         const bdPhoneFromAudio = alignments[i]
-        const lcs = longestCommonSubsequence(bdPhoneFromText, bdPhoneFromAudio) 
-        const score = (bdPhoneFromText.length == 0) ? 0 : lcs.length / bdPhoneFromText.length;
-    
+        const lcs = longestCommonSubsequence(normalizedPhoneFromText, bdPhoneFromAudio)
+        const score = (bdPhoneFromText.length == 0) ? 0 : (lcs.length / bdPhoneFromText.length);
+
         this.breakdowns.push({
           source: breakdowns[i][0],
           phonemeFromText: bdPhoneFromText,
@@ -202,54 +214,63 @@ export default Vue.extend({
           date: new Date().toLocaleString(),
           score: this.totalScore
         })
-        this.recordScoreToDB(totalScore)
+        // this.recordScoreToDB(totalScore)
       }
 
       this.processingSpeech = false;
     },
-    recordScoreToDB(score: Number) {
-      const data = {
-        userId: this.userId,
-        score: score
-      }
-      this.$axios
-        .post('/api/score', data)
-        .then((response) => response.data)
-        .catch(console.log);
-    },
-    fetchUserScoresFromDB() {
-      this.$axios.get(`/api/score/${this.userId}`)
-      .then((response) => {
-        let items = []
-        for (let item of response.data) {
-          items.push({
-            date: new Date(item.createdAt).toLocaleString(),
-            score: item.score.toFixed(4)
-          })
-        }
-        this.scoreHistory = items
-      })
-      .catch(console.log);
-    },
+    // recordScoreToDB(score: Number) {
+    //   const data = {
+    //     userId: this.userId,
+    //     score: score
+    //   }
+    //   this.$axios
+    //     .post('/api/score', data)
+    //     .then((response) => response.data)
+    //     .catch(console.log);
+    // },
+    // fetchUserScoresFromDB() {
+    //   this.$axios.get(`/api/score/${this.userId}`)
+    //   .then((response) => {
+    //     let items = []
+    //     for (let item of response.data) {
+    //       items.push({
+    //         date: new Date(item.createdAt).toLocaleString(),
+    //         score: item.score.toFixed(4)
+    //       })
+    //     }
+    //     this.scoreHistory = items
+    //   })
+    //   .catch(console.log);
+    // },
     convertText2Phoneme(text: string) {
+      this.progress = 70;
       return this.$axios
-        .get(`/api/text2phoneme?text=${text}&breakdown=true`)
+        .get(`/text2phoneme?text=${text}&breakdown=true`)
         .then((response) => response.data)
-        .catch(console.log);
+        .catch(this.handleError);
     },
     getPhoneme(): Promise<string> {
       return new Promise(async (resolve) => {
         let counter = 0;
         while (counter++ < 3) {
+          this.progress = 20 * counter;
           try {
-            let response = await this.$axios.post("/api/audio2phoneme", this.audioBlob);
+            const config = { headers: {'Content-Type': 'audio/webm'} };
+            let response = await this.$axios.post("/audio2phoneme", this.audioBlob, config);
             return resolve(response.data["text"]);
           } catch (error) {
-            await new Promise((resolve2) => setTimeout(resolve2, 1000 * 60));
+            await new Promise((resolve2) => setTimeout(resolve2, 1000 * 30));
           }
         }
+        this.handleError('Error while converting audio to phoneme.')
       });
     },
+    handleError(error: any): void {
+      this.progress = 0;
+      this.processingSpeech = false;
+      console.log(error)
+    }
   },
 });
 </script>
