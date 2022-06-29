@@ -36,20 +36,15 @@
         <el-button
           type="primary"
           v-if="audioPath != null && audioBlob != null"
-          @click="this.processing"
-          :disabled="this.processingSpeech"
+          @click="processing"
+          :disabled="processingSpeech"
         >
         Analyze
-        </el-button
-        >
+        </el-button>
       </div>
-      <div>
-        <el-progress 
-          v-if="this.processingSpeech"
-          :percentage="progress" 
-          :format="''"
-        >
-        </el-progress>
+      <div v-if="processingSpeech">
+        <el-progress :percentage="progress" ></el-progress>
+        <el-alert title="Please wait. This may take up to 1 minute." type="info"></el-alert>
       </div>
       <div v-if="breakdowns.length > 0">
         <hr style="margin: 50px 0"/>
@@ -149,8 +144,6 @@ export default Vue.extend({
   mounted() {
     this.getPhoneme();
     // this.fetchUserScoresFromDB()
-    // const alignments = TextAlign.align('məʃiːn lɜːnɪŋ ɪz ɔːsʌm', ' məʃinɝniŋ ɪzɑsəm');
-    // console.log(alignments);
   },
   data() {
     return {
@@ -187,8 +180,39 @@ export default Vue.extend({
     async processing() {
       this.processingSpeech = true;
       this.progress = 0;
+
+      // Validating Text Field
+      if (!this.textarea || this.textarea.length == 0) {
+        this.$notify({
+          title: 'Warning',
+          message: "Text can not be empty",
+          type: 'warning'
+        });
+        return this.handleError(null);
+      }
+
+      // Transcript phoneme + Validate the output
       const phonemeFromAudio = await this.getPhoneme();
+      if (!phonemeFromAudio || phonemeFromAudio.length == 0) {
+        this.$notify({
+          title: 'Warning',
+          message: "Audio can not be empty",
+          type: 'warning'
+        });
+        return this.handleError(null);
+      }
+
+      // Translate + Validate text->phoneme outout
       const phonemeFromTextRs = await this.convertText2Phoneme(this.textarea);
+      if (!phonemeFromTextRs || phonemeFromTextRs.length == 0) {
+        this.$notify({
+          title: 'Warning',
+          message: "Text is not input properly.",
+          type: 'warning'
+        });
+        return this.handleError(null);
+      }
+
       const phonemeFromText = phonemeFromTextRs["phoneme"];
       const breakdowns = phonemeFromTextRs["breakdown"];
       const alignments = TextAlign.align(phonemeFromText,phonemeFromAudio);
