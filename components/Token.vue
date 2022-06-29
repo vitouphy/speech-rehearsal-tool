@@ -15,7 +15,7 @@
     </div>
     <span slot="reference" 
           :class="{ highlight: isVisible }"
-          :style="{ color: item['score'] >= 0.5 ? 'green' : (item['score'] > 0.25 ? 'orange' : '#e40000')}">
+          :style="{ color: item['score'] >= 0.6 ? 'green' : (item['score'] > 0.25 ? 'orange' : '#e40000')}">
       {{ item["source"] }}
     </span>
   </el-popover>
@@ -34,6 +34,11 @@ import phonemeNormalizer from "~/scripts/phoneme-normalizer";
 
 export default Vue.extend({
   props: ["item"],
+  watch: {
+    item: function(newVal, oldVal) {
+      this.audio = (null as any) as HTMLAudioElement
+    }
+  },
   data() {
     return {
       isVisible: false,

@@ -147,9 +147,10 @@ export default Vue.extend({
     }
   },
   mounted() {
-    // console.log(phonemeNormalizer.normalize("hell:ɨo"))
     this.getPhoneme();
     // this.fetchUserScoresFromDB()
+    // const alignments = TextAlign.align('məʃiːn lɜːnɪŋ ɪz ɔːsʌm', ' məʃinɝniŋ ɪzɑsəm');
+    // console.log(alignments);
   },
   data() {
     return {
@@ -158,12 +159,18 @@ export default Vue.extend({
       audioPath: null as any as string,
       audioBlob: null as any,
       // breakdowns: [
-      //   {
-      //     source: 'hello',
-      //     phonemeFromText: 'hellːɨo',
-      //     phonemeFromAudio: 'helltoz',
-      //     score: 0.8,
-      //   }
+        // {
+        //   source: 'hello',
+        //   phonemeFromText: 'hellːɨo',
+        //   phonemeFromAudio: 'helltoz',
+        //   score: 0.8,
+        // },
+        // {
+        //   source: 'hello',
+        //   phonemeFromText: 'məʃiːn lɜːnɪŋ ɪz ɔːsʌm',
+        //   phonemeFromAudio: ' məʃinɝniŋ ɪzɑsəm',
+        //   score: 0.8,
+        // }
       // ],
       breakdowns: [] as any,
       processingSpeech: false,

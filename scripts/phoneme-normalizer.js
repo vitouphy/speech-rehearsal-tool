@@ -11,7 +11,8 @@ const normalize_map = {
     'ɾ̃':'ŋ',
     // these 4 should be in the same group
     'ɜ':'ɝ',
-    'ə':'ʌ'   
+    'ə':'ʌ',
+    'ɐ':'ʌ'
 }
 
 export default {
