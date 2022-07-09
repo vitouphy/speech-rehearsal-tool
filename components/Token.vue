@@ -48,14 +48,13 @@ export default Vue.extend({
   },
   methods: {
     convertText2Speech(text: string) {
-      return this.$axios
-        .get(`/text2speech?text=${text}`)
-        .then((response) => {
-          const buf = Buffer.from(response.data.audio, 'base64')
-          const blob = new Blob([buf], { type: 'audio/wav' });
-          this.audioUrl = window.URL.createObjectURL(blob);
-        })
-        .catch(console.log);
+      return this.$axios.get(`/text2speech?text=${text}`)
+      .then((response) => {
+        const buf = Buffer.from(response.data, 'base64')
+        const blob = new Blob([buf], { type: response.headers['content-type'] });
+        this.audioUrl = window.URL.createObjectURL(blob);
+      })
+      .catch(console.log);
     },
     async playAudio() {
       if (!this.audio) {

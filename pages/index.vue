@@ -12,12 +12,6 @@
       class="main-container"
     >
       <div style="height: 50px"></div>
-      <!-- <div style="text-align: right">
-        <el-button style="margin-bottom: 5px;" @click="dialogVisible = true">
-          <i class="el-icon-s-data"></i>
-          Past Performances
-        </el-button>
-      </div> -->
       <div>
         <el-input
           type="textarea"
@@ -143,7 +137,6 @@ export default Vue.extend({
   },
   mounted() {
     this.getPhoneme();
-    // this.fetchUserScoresFromDB()
   },
   data() {
     return {
@@ -152,18 +145,18 @@ export default Vue.extend({
       audioPath: null as any as string,
       audioBlob: null as any,
       // breakdowns: [
-        // {
-        //   source: 'hello',
-        //   phonemeFromText: 'hellːɨo',
-        //   phonemeFromAudio: 'helltoz',
-        //   score: 0.8,
-        // },
-        // {
-        //   source: 'hello',
-        //   phonemeFromText: 'məʃiːn lɜːnɪŋ ɪz ɔːsʌm',
-        //   phonemeFromAudio: ' məʃinɝniŋ ɪzɑsəm',
-        //   score: 0.8,
-        // }
+      //   {
+      //     source: 'hello',
+      //     phonemeFromText: 'hellːɨo',
+      //     phonemeFromAudio: 'helltoz',
+      //     score: 0.8,
+      //   },
+      //   {
+      //     source: 'hello',
+      //     phonemeFromText: 'məʃiːn lɜːnɪŋ ɪz ɔːsʌm',
+      //     phonemeFromAudio: ' məʃinɝniŋ ɪzɑsəm',
+      //     score: 0.8,
+      //   }
       // ],
       breakdowns: [] as any,
       processingSpeech: false,
@@ -245,35 +238,10 @@ export default Vue.extend({
           date: new Date().toLocaleString(),
           score: this.totalScore
         })
-        // this.recordScoreToDB(totalScore)
       }
 
       this.processingSpeech = false;
     },
-    // recordScoreToDB(score: Number) {
-    //   const data = {
-    //     userId: this.userId,
-    //     score: score
-    //   }
-    //   this.$axios
-    //     .post('/api/score', data)
-    //     .then((response) => response.data)
-    //     .catch(console.log);
-    // },
-    // fetchUserScoresFromDB() {
-    //   this.$axios.get(`/api/score/${this.userId}`)
-    //   .then((response) => {
-    //     let items = []
-    //     for (let item of response.data) {
-    //       items.push({
-    //         date: new Date(item.createdAt).toLocaleString(),
-    //         score: item.score.toFixed(4)
-    //       })
-    //     }
-    //     this.scoreHistory = items
-    //   })
-    //   .catch(console.log);
-    // },
     convertText2Phoneme(text: string) {
       this.progress = 70;
       return this.$axios
